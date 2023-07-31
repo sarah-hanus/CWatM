@@ -638,7 +638,7 @@ class landcoverType(object):
                             self.var.fracVegCover[ind][np.where(self.var.fracVegCover[ind] < 0)] = 0
                     #assert that all land cover classes larger than zero
                     assert (self.var.fracVegCover >= 0).all()
-                    assert np.mean(sum) == np.mean(np.sum(self.var.fracVegCover,axis=0)) + np.mean(self.var.fracGlacierCover)
+                    assert np.round(np.mean(sum),decimals=5) == np.round(np.mean(np.sum(self.var.fracVegCover,axis=0)) + np.mean(self.var.fracGlacierCover),decimals=5)
 
             """temp = loadmap('reservoir_command_areas').astype(np.int)
             self.var.fracVegCover[3] += np.where(temp > 0, self.var.fracVegCover[1] * 0.25,

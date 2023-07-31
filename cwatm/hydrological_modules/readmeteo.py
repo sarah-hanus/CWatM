@@ -120,6 +120,9 @@ class readmeteo(object):
         cutmap[0], cutmap[1], cutmap[2], cutmap[3] = mapattrNetCDF(nameldd)
         for i in range(4): cutmapFine[i] = cutmap[i]
 
+        #glacier melt is always given at the correct resolution and does not need to be downscaled, it needs to be cut similarly to ldd
+        for i in range(4): cutmapLdd[i] = cutmap[i]
+
         # for downscaling meteomaps , Wordclim data at a finer resolution is used
         # here it is necessary to clip the wordclim data so that they fit to meteo dataset
         self.var.meteodown = False
@@ -593,9 +596,9 @@ class readmeteo(object):
         self.var.Precipitation = np.maximum(0., self.var.Precipitation)
         
         if self.var.includeGlaciers:
-            self.var.GlacierMelt, MaskMapBoundary = readmeteodata(self.var.glaciermeltMaps, dateVar['currDate'], addZeros=True, mapsscale = True)
+            self.var.GlacierMelt, MaskMapBoundary = readmeteodata(self.var.glaciermeltMaps, dateVar['currDate'], addZeros=True, mapsscale = True, downscaling=False)
             if not self.var.includeOnlyGlaciersMelt:
-                self.var.GlacierRain, MaskMapBoundary = readmeteodata(self.var.glacierrainMaps, dateVar['currDate'], addZeros=True, mapsscale = True)
+                self.var.GlacierRain, MaskMapBoundary = readmeteodata(self.var.glacierrainMaps, dateVar['currDate'], addZeros=True, mapsscale = True, downscaling=False)
 
         if self.var.meteodown:
             if self.var.InterpolationMethod == 'bilinear':

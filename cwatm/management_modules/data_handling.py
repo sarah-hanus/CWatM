@@ -915,7 +915,7 @@ def multinetdf(meteomaps, startcheck = 'dateBegin'):
 
 
 
-def readmeteodata(name, date, value='None', addZeros = False, zeros = 0.0,mapsscale = True, buffering=False):
+def readmeteodata(name, date, value='None', addZeros = False, zeros = 0.0,mapsscale = True, downscaling=True, buffering=False):
     """
     load stack of maps 1 at each timestamp in netcdf format
 
@@ -925,6 +925,7 @@ def readmeteodata(name, date, value='None', addZeros = False, zeros = 0.0,mapssc
     :param addZeros:
     :param zeros: default value
     :param mapsscale: if meteo maps have the same extend as the other spatial static m
+    :param downscaling: if meteo maps need to be downscaled
     :param buffering: if buffer should be applied before cutting the map to the mask extent
     :return: Compressed 1D array of meteo data
 
@@ -969,8 +970,12 @@ def readmeteodata(name, date, value='None', addZeros = False, zeros = 0.0,mapssc
         mapnp = np.flipud(mapnp)
 
     if cutcheck:
+        if downscaling:
+            for i in range(4): cutmapMeteo[i] = cutmapFine[i]
+        else:
+            for i in range(4): cutmapMeteo[i] = cutmapLdd[i]
         if turn_latitude:
-            mapnp = mapnp[cutmapFine[2]:cutmapFine[3], cutmapFine[0]:cutmapFine[1]]
+            mapnp = mapnp[cutmapMeteo[2]:cutmapMeteo[3], cutmapMeteo[0]:cutmapMeteo[1]]
             #TODO: make buffering work if lattitude is turned
         else:
             if buffering:
@@ -983,33 +988,33 @@ def readmeteodata(name, date, value='None', addZeros = False, zeros = 0.0,mapssc
                 #          buffer2
                 buffer4, buffer2 = [1,1]
                 #if the input map should be used until the last column there is no buffer
-                if nf1.variables[value].shape[2] == cutmapFine[1]:
+                if nf1.variables[value].shape[2] == cutmapMeteo[1]:
                     buffer4 = 0
                 # if the input map should be used at the last row there is no buffer
-                if nf1.variables[value].shape[1] == cutmapFine[3]:
+                if nf1.variables[value].shape[1] == cutmapMeteo[3]:
                     buffer2 = 0
                 # if the input map should be used at the first row or column there is no buffer
-                if (cutmapFine[2] == 0) and (cutmapFine[0] == 0):
-                    mapnp = nf1.variables[value][idx, cutmapFine[2]:cutmapFine[3] + buffer2,
-                            cutmapFine[0]:cutmapFine[1] + buffer4].astype(np.float64)
+                if (cutmapMeteo[2] == 0) and (cutmapMeteo[0] == 0):
+                    mapnp = nf1.variables[value][idx, cutmapMeteo[2]:cutmapMeteo[3] + buffer2,
+                            cutmapMeteo[0]:cutmapMeteo[1] + buffer4].astype(np.float64)
                     buffer1, buffer3 = [0,0]
                 # if the input map should be used at the first row there is no buffer
-                elif cutmapFine[2] == 0:
-                    mapnp = nf1.variables[value][idx, cutmapFine[2]:cutmapFine[3] + buffer2,
-                            cutmapFine[0] - buffer:cutmapFine[1] + buffer4].astype(np.float64)
+                elif cutmapMeteo[2] == 0:
+                    mapnp = nf1.variables[value][idx, cutmapMeteo[2]:cutmapMeteo[3] + buffer2,
+                            cutmapMeteo[0] - buffer:cutmapMeteo[1] + buffer4].astype(np.float64)
                     buffer1, buffer3 = [0, 1]
                 # if the input map should be used at the first column there is no buffer
-                elif cutmapFine[0] == 0:
-                    mapnp = nf1.variables[value][idx, cutmapFine[2] - buffer:cutmapFine[3] + buffer2,
-                            cutmapFine[0]:cutmapFine[1] + buffer4].astype(np.float64)
+                elif cutmapMeteo[0] == 0:
+                    mapnp = nf1.variables[value][idx, cutmapMeteo[2] - buffer:cutmapMeteo[3] + buffer2,
+                            cutmapMeteo[0]:cutmapMeteo[1] + buffer4].astype(np.float64)
                     buffer1, buffer3 = [1,0]
                 else:
-                    mapnp = nf1.variables[value][idx, cutmapFine[2] - buffer:cutmapFine[3] + buffer2,
-                            cutmapFine[0] - buffer:cutmapFine[1] + buffer4].astype(np.float64)
+                    mapnp = nf1.variables[value][idx, cutmapMeteo[2] - buffer:cutmapMeteo[3] + buffer2,
+                            cutmapMeteo[0] - buffer:cutmapMeteo[1] + buffer4].astype(np.float64)
                     buffer1, buffer3 = [1, 1]
 
             else:
-                mapnp = nf1.variables[value][idx, cutmapFine[2]:cutmapFine[3], cutmapFine[0]:cutmapFine[1]].astype(np.float64)
+                mapnp = nf1.variables[value][idx, cutmapMeteo[2]:cutmapMeteo[3], cutmapMeteo[0]:cutmapMeteo[1]].astype(np.float64)
     else:
         if not(turn_latitude):
             mapnp = nf1.variables[value][idx].astype(np.float64)
@@ -1028,6 +1033,7 @@ def readmeteodata(name, date, value='None', addZeros = False, zeros = 0.0,mapssc
 
     if mapsscale:  # if meteo maps have the same extend as the other spatial static maps -> meteomapsscale = True
         if maskinfo['shapeflat'][0]!= mapnp.size:
+            print(maskinfo['shapeflat'][0], mapnp.size)
             msg = "Error 109: " + name + " has less or more valid pixels than the mask map \n"
             msg += "if it is the ET maps, it might be from another run with different mask. Please look at the option: calc_evaporation"
             raise CWATMWarning(msg)
@@ -1143,7 +1149,7 @@ def readnetcdf2(namebinding, date, useDaily='daily', value='None', addZeros = Fa
            mapnp = np.flipud(mapnp)
     except:
        ii = 1
-    if 'Glacier' in namebinding:
+    if 'fractionGlaciercover' in namebinding:
         cutcheckmask = maskinfo['shape'][0] * maskinfo['shape'][1]
         cutcheckmap = nf1.variables[value].shape[1] * nf1.variables[value].shape[2]
         cut = True
