@@ -297,14 +297,14 @@ class snow_frost(object):
             #if snow cover higher than snow holding capacity redistribution
             # get the thresholds for the snow based on the snow density and snow depth values in Frey and Holzmann (2015)
             #capacity of forest 2.5m snow cover, assumed snow density 250kg/m3: 0.25 * 1000 * 2.5 / 1000
-            # capacity of other land cover 0.25m snow cover, assumed snow density 250kg/m3: 0.25 * 1000 * 0.25 / 1000
+            # capacity of other land cover 0.5m snow cover (pastures), assumed snow density 250kg/m3: 0.25 * 1000 * 0.5 / 1000
             #but only for cells with std above 100m
             swe_forest = 0.625
-            swe_other = 0.0625
+            swe_other = 0.125
             # snow capacity depends on whether there is frost cover in the elevation zone
             snowcapacity = np.where(i <= nr_frac_forest, swe_other, swe_forest)
             # where snow cover is higher than capacity, a fraction of snow will be redistributed
-            snow_redistributed = np.where(self.var.SnowCoverS[i] > snowcapacity, self.var.frac_snow_redistribution * self.var.SnowCoverS[i], 0)
+            snow_redistributed = np.where(self.var.SnowCoverS[i] > snowcapacity, self.var.frac_snow_redistribution * (self.var.SnowCoverS[i] - snowcapacity), 0)
             # the lowest elevation zone cannot redistribute snow
             if i == self.var.numberSnowLayers - 1:
                 snow_redistributed = globals.inZero
