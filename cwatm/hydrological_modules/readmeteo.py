@@ -169,6 +169,13 @@ class readmeteo(object):
             self.var.includeGlaciers = checkOption('includeGlaciers')
         if 'includeOnlyGlaciersMelt' in option:
             self.var.includeOnlyGlaciersMelt = checkOption('includeOnlyGlaciersMelt')
+
+        # read in mountain file if available and maskMountains in setings file
+        self.var.maskMountains = False
+        if 'maskMountains' in option:
+            self.var.maskMountains = checkOption('maskMountains')
+            if self.var.maskMountains:
+                self.var.MountainMask = loadmap('MountainMask')
            
         self.var.preMaps = 'PrecipitationMaps'
         self.var.tempMaps = 'TavgMaps'
@@ -593,12 +600,24 @@ class readmeteo(object):
         self.var.Precipitation, MaskMapBoundary = readmeteodata(self.var.preMaps, dateVar['currDate'], addZeros=True, mapsscale = self.var.meteomapsscale, buffering= self.var.buffer)
         self.var.Precipitation = self.var.Precipitation * self.var.DtDay * self.var.con_precipitation
 
+
+        # use mountains mask to set precipitation to zero in mountain grid cells
+        # mountain grid cells in mountain mask have values of 1, whereas non-mountain areas are 0
+        if self.var.maskMountains:
+            self.var.Precipitation = np.where(self.var.MountainMask == 1, np.zeros_like(self.var.Precipitation),
+                                              self.var.Precipitation)
         self.var.Precipitation = np.maximum(0., self.var.Precipitation)
         
         if self.var.includeGlaciers:
             self.var.GlacierMelt = readmeteodata(self.var.glaciermeltMaps, dateVar['currDate'], addZeros=True, mapsscale = True, downscaling=False)[0]
+            if self.var.maskMountains:
+                self.var.GlacierMelt = np.where(self.var.MountainMask == 1, np.zeros_like(self.var.GlacierMelt),
+                                                  self.var.GlacierMelt)
             if not self.var.includeOnlyGlaciersMelt:
                 self.var.GlacierRain = readmeteodata(self.var.glacierrainMaps, dateVar['currDate'], addZeros=True, mapsscale = True, downscaling=False)[0]
+                if self.var.maskMountains:
+                    self.var.GlacierRain = np.where(self.var.MountainMask == 1, np.zeros_like(self.var.GlacierRain),
+                                                    self.var.GlacierRain)
 
         if self.var.meteodown:
             if self.var.InterpolationMethod == 'bilinear':
