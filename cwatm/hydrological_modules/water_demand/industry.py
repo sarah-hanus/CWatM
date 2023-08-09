@@ -81,6 +81,12 @@ class waterdemand_industry:
 
             self.var.industryDemand = readnetcdf2('industryWaterDemandFile', wd_date, self.var.industryTime, value=self.var.indWithdrawalVar)
             self.var.pot_industryConsumption = readnetcdf2('industryWaterDemandFile', wd_date, self.var.industryTime, value=self.var.indConsumptionVar)
+            if self.var.maskMountains:
+                self.var.industryDemand = np.where(self.var.MountainMask == 1, np.zeros_like(self.var.industryDemand),
+                                                   self.var.industryDemand)
+                self.var.pot_industryConsumption = np.where(self.var.MountainMask == 1,
+                                                            np.zeros_like(self.var.pot_industryConsumption),
+                                                            self.var.pot_industryConsumption)
             self.var.industryDemand = np.where(self.var.industryDemand > self.var.InvCellArea, self.var.industryDemand, 0.0)
             self.var.pot_industryConsumption = np.where(self.var.pot_industryConsumption > self.var.InvCellArea, self.var.pot_industryConsumption, 0.0)
 

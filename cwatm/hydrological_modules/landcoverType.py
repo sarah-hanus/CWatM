@@ -88,7 +88,7 @@ class landcoverType(object):
     lambda2                                                                                                        --   
     lambda3                                                                                                        --   
     thetas1                                                                                                        --   
-    thetas2                                                                                                        --   
+    thetas2                                                                                                        --
     thetas3                                                                                                        --   
     thetar1                                                                                                        --   
     thetar2                                                                                                        --   
@@ -474,6 +474,13 @@ class landcoverType(object):
 
             # init values
             #self.var.interflow[i] = self.var.load_initial(coverType + "_interflow")
+            if self.var.maskMountains:
+                self.var.wwp1[i] = np.where(self.var.MountainMask == 1, np.zeros_like(self.var.wwp1[i]),
+                                                  self.var.wwp1[i])
+                self.var.wwp2[i] = np.where(self.var.MountainMask == 1, np.zeros_like(self.var.wwp2[i]),
+                                            self.var.wwp2[i])
+                self.var.wwp3[i] = np.where(self.var.MountainMask == 1, np.zeros_like(self.var.wwp3[i]),
+                                            self.var.wwp3[i])
             self.var.w1[i] = self.var.load_initial(coverType + "_w1",default = self.var.wwp1[i])
             self.var.w2[i] = self.var.load_initial(coverType + "_w2",default = self.var.wwp2[i])
             self.var.w3[i] = self.var.load_initial(coverType + "_w3",default = self.var.wwp3[i])

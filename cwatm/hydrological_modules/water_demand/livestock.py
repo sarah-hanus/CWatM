@@ -78,6 +78,10 @@ class waterdemand_livestock:
             if self.var.livestockTime == 'monthly': new = 'newMonth'
             if globals.dateVar['newStart'] or globals.dateVar[new]:
                 self.var.livestockDemand = readnetcdf2('livestockWaterDemandFile', wd_date, self.var.domesticTime, value=self.var.livVar)
+                if self.var.maskMountains:
+                    self.var.livestockDemand = np.where(self.var.MountainMask == 1,
+                                                       np.zeros_like(self.var.livestockDemand),
+                                                       self.var.livestockDemand)
                 # avoid small values (less than 1 m3):
                 self.var.livestockDemand = np.where(self.var.livestockDemand > self.var.InvCellArea, self.var.livestockDemand, 0.0)
                 self.var.pot_livestockConsumption =  self.var.livestockDemand

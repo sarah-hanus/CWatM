@@ -151,6 +151,12 @@ class waterdemand_domestic:
                                                       value=self.var.domWithdrawalVar)
                 self.var.pot_domesticConsumption = readnetcdf2('domesticWaterDemandFile', wd_date,
                                                                self.var.domesticTime, value=self.var.domConsumptionVar)
+                if self.var.maskMountains:
+                    self.var.domesticDemand = np.where(self.var.MountainMask == 1, np.zeros_like(self.var.domesticDemand),
+                                                      self.var.domesticDemand)
+                    self.var.pot_domesticConsumption = np.where(self.var.MountainMask == 1,
+                                                       np.zeros_like(self.var.pot_domesticConsumption),
+                                                       self.var.pot_domesticConsumption)
                 # avoid small values (less than 1 m3):
                 self.var.domesticDemand = np.where(self.var.domesticDemand > self.var.InvCellArea,
                                                    self.var.domesticDemand, 0.0)

@@ -7,7 +7,7 @@
 # Created:     15/07/2016
 # Copyright:   (c) PB 2016
 # -------------------------------------------------------------------------
-
+import numpy as np
 from cwatm.management_modules import globals
 from cwatm.management_modules.data_handling import returnBool, binding, readnetcdf2
 
@@ -64,5 +64,11 @@ class waterdemand_environmental_need:
                 # envflow in [m3/s] -> [m]
                 self.var.envFlowm3s = readnetcdf2('EnvironmentalFlowFile', globals.dateVar['currDate'], "month", cut=self.var.cut_ef_map) # in [m3/s]
                 self.var.envFlow = self.var.M3toM  * self.var.channelAlpha * self.var.chanLength * self.var.envFlowm3s ** 0.6 # in [m]
+
         else:
             self.var.envFlow = 0.00001  # 0.01mm
+
+        if self.var.maskMountains:
+            self.var.envFlow = np.where(self.var.MountainMask == 1,
+                                                np.zeros_like(self.var.envFlow),
+                                                self.var.envFlow)

@@ -603,9 +603,6 @@ class readmeteo(object):
 
         # use mountains mask to set precipitation to zero in mountain grid cells
         # mountain grid cells in mountain mask have values of 1, whereas non-mountain areas are 0
-        if self.var.maskMountains:
-            self.var.Precipitation = np.where(self.var.MountainMask == 1, np.zeros_like(self.var.Precipitation),
-                                              self.var.Precipitation)
         self.var.Precipitation = np.maximum(0., self.var.Precipitation)
         
         if self.var.includeGlaciers:
@@ -629,6 +626,10 @@ class readmeteo(object):
                 self.var.Precipitation, self.var.wc2_prec, self.var.wc4_prec = self.downscaling2(self.var.Precipitation, "downscale_wordclim_prec", self.var.wc2_prec, self.var.wc4_prec, downscale=2)
         else:
             self.var.Precipitation = self.downscaling2(self.var.Precipitation, "downscale_wordclim_prec", self.var.wc2_prec, self.var.wc4_prec, downscale=0)
+
+        if self.var.maskMountains:
+            self.var.Precipitation = np.where(self.var.MountainMask == 1, np.zeros_like(self.var.Precipitation),
+                                              self.var.Precipitation)
 
         #self.var.Precipitation = self.var.Precipitation * 1000
         

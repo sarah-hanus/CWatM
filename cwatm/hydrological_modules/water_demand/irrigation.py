@@ -137,6 +137,9 @@ class waterdemand_irrigation:
         # ignore demand if less than 1 m3
         self.var.pot_irrConsumption[No] = np.where(self.var.pot_irrConsumption[No] > self.var.InvCellArea,
                                                    self.var.pot_irrConsumption[No], 0)
+        if self.var.maskMountains:
+            self.var.pot_irrConsumption[No] = np.where(self.var.MountainMask == 1, np.zeros_like(self.var.pot_irrConsumption[No]),
+                                        self.var.pot_irrConsumption[No])
         self.var.irrDemand[No] = self.var.pot_irrConsumption[No] / self.var.efficiencyPaddy
 
         # -----------------
@@ -196,6 +199,10 @@ class waterdemand_irrigation:
 
         self.var.pot_irrConsumption[No] = np.where(self.var.cropKC[No] > 0.20, np.where(readAvlWater < (self.var.alphaDepletion * critAvlWater),
                                                         np.maximum(0.0, self.var.alphaDepletion * self.var.totAvlWater - readAvlWater),  0.), 0.)
+
+        if self.var.maskMountains:
+            self.var.pot_irrConsumption[No] = np.where(self.var.MountainMask == 1, np.zeros_like(self.var.pot_irrConsumption[No]),
+                                        self.var.pot_irrConsumption[No])
 
         if "fraction_IncreaseIrrigation_Nonpaddy" in binding:
             self.var.fraction_IncreaseIrrigation_Nonpaddy = loadmap(
