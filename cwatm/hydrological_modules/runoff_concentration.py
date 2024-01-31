@@ -225,7 +225,6 @@ class runoff_concentration(object):
             self.var.sum_landSurfaceRunoff += self.var.fracVegCover[No] * self.var.landSurfaceRunoff[No]
         self.var.runoff = self.var.sum_landSurfaceRunoff + self.var.baseflow + self.var.leakageIntoRunoff
 
-
         if self.var.includeGlaciers:
             #from m3/d to m/d by dividing by the cell area
             if self.var.includeOnlyGlaciersMelt:
@@ -240,6 +239,10 @@ class runoff_concentration(object):
                 self.var.GlacierMelt = self.var.GlacierMelt / self.var.cellArea
                 self.var.GlacierRain = self.var.GlacierRain / self.var.cellArea
                 self.var.runoff += self.var.GlacierMelt + self.var.GlacierRain
+
+        # if you want to mask lowlandsset the runoff to zero, such that no water from lowlands reaches the streams
+        if self.var.maskLowlands:
+            self.var.runoff = np.where(self.var.LowlandMask == 1, np.zeros_like(self.var.runoff),self.var.runoff)
 
         #print(self.var.runoff)
         if checkOption('includeRunoffConcentration'):

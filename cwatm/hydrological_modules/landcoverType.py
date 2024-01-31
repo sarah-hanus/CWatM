@@ -870,6 +870,9 @@ class landcoverType(object):
         
         if self.var.includeWastewaterPits:
             self.var.sum_gwRecharge += self.var.pitLatrinToGW
+        # if you want to mask lowlandsset the gw recharge to zero, such that no ground water storage
+        if self.var.maskLowlands:
+            self.var.sum_gwRecharge = np.where(self.var.LowlandMask == 1, np.zeros_like(self.var.sum_gwRecharge), self.var.sum_gwRecharge)
             
         soilVars = ['w1','w2','w3']
         for variable in soilVars:

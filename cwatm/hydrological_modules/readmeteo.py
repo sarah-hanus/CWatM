@@ -176,6 +176,12 @@ class readmeteo(object):
             self.var.maskMountains = checkOption('maskMountains')
             if self.var.maskMountains:
                 self.var.MountainMask = loadmap('MountainMask')
+
+        self.var.maskLowlands = False
+        if 'maskLowlands' in option:
+            self.var.maskLowlands = checkOption('maskLowlands')
+            if self.var.maskLowlands:
+                self.var.LowlandMask = loadmap('LowlandMask')
            
         self.var.preMaps = 'PrecipitationMaps'
         self.var.tempMaps = 'TavgMaps'
