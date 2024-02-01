@@ -2179,7 +2179,7 @@ class water_demand:
                             # this might be a regular grid e.g. 2x2 for 0.5 deg
                             left_sf_avail = self.var.readAvlChannelStorageM  # already removed - self.var.act_channelAbst
                             # sum demand, surface water - local used, groundwater - local use, not satisfied for allocation zone
-
+                            self.var.unmetDemand = totalDemand - self.var.act_SurfaceWaterAbstract - self.var.nonFossilGroundwaterAbs
                             if self.var.sectorSourceAbstractionFractions:
                                 unmetChannel_Domestic = pot_Channel_Domestic - self.var.Channel_Domestic
                                 unmetChannel_Livestock = pot_Channel_Livestock - self.var.Channel_Livestock
@@ -2198,21 +2198,25 @@ class water_demand:
 
                             else:
                                 # get the demand that still needs to be met
-                                self.var.unmetDemand = totalDemand - self.var.act_SurfaceWaterAbstract - self.var.nonFossilGroundwaterAbs
-                                #multiply with cellarea [m] -> [m3], otherwise bincount is not correct, divide again by cellarea to get [m] again
-                                zoneDemand = npareatotal(self.var.unmetDemand * self.var.cellArea, self.var.allocation_zone) / self.var.cellArea
+                                unmetDemand_sw = np.minimum(self.var.unmetDemand,
+                                                            totalDemand * self.var.swAbstractionFraction - self.var.act_SurfaceWaterAbstract)
+                                # multiply with cellarea [m] -> [m3], otherwise bincount is not correct, divide again by cellarea to get [m] again
+                                zoneDemand = npareatotal(self.var.unmetDemand * self.var.cellArea,
+                                                         self.var.allocation_zone) / self.var.cellArea
+                                zoneDemand_sw = npareatotal(unmetDemand_sw * self.var.cellArea,
+                                                            self.var.allocation_zone) / self.var.cellArea
 
                             zone_sf_avail = npareatotal(left_sf_avail * self.var.cellArea, self.var.allocation_zone) / self.var.cellArea
 
                             # zone abstraction is minimum of availability and demand [m3]
-                            zone_sf_abstraction = np.minimum(zoneDemand, zone_sf_avail)
+                            zone_sf_abstraction = np.minimum(zoneDemand_sw, zone_sf_avail)
                             # water taken from surface zone and allocated to cell demand
-                            cell_sf_abstraction = np.maximum(0., np.where(zoneDemand < zone_sf_avail, divideValues(left_sf_avail, zone_sf_avail) * zoneDemand, left_sf_avail))
+                            cell_sf_abstraction = np.maximum(0., np.where(zoneDemand_sw < zone_sf_avail, divideValues(left_sf_avail, zone_sf_avail) * zoneDemand_sw, left_sf_avail))
 
                             # the allocation doesn't need to be adapted because zone_sf_abstraction always <= zoneDemand
                             # cell_sf_allocation shows for which cells demand is satisfied how much, whereas cell_sf_abstraction shows where water is abstracted
-                            cell_sf_allocation = np.maximum(0., divideValues(self.var.unmetDemand,
-                                                                             zoneDemand) * zone_sf_abstraction)
+                            cell_sf_allocation = np.maximum(0., divideValues(unmetDemand_sw,
+                                                                             zoneDemand_sw) * zone_sf_abstraction)
 
                             # sum up with other abstraction
                             self.var.act_SurfaceWaterAbstract = self.var.act_SurfaceWaterAbstract + cell_sf_abstraction
