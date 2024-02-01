@@ -645,7 +645,10 @@ class water_demand:
             arr = np.kron(np.arange(rows // inner * cols // inner).reshape((rows // inner, cols // inner)),
                           np.ones((inner, inner)))
             arr = arr[cut2:cut3, cut0:cut1].astype(int)
-            self.var.allocation_zone = compressArray(arr)
+            if 'allocation_area_map' in binding:
+                self.var.allocation_zone = loadmap('allocation_area_map').astype(int)
+            else:
+                self.var.allocation_zone = compressArray(arr)
 
             self.var.modflowPumping = globals.inZero.copy()
             self.var.leakage = globals.inZero.copy()
@@ -2242,10 +2245,12 @@ class water_demand:
 
                             left_gw_demand = np.maximum(0., self.var.pot_GroundwaterAbstract - self.var.nonFossilGroundwaterAbs)
                             left_gw_avail = self.var.readAvlStorGroundwater - self.var.nonFossilGroundwaterAbs
+                            #TODO zone gw should still be the normal zonal abstraction and not the new one
                             zone_gw_avail = npareatotal(left_gw_avail * self.var.cellArea, self.var.allocation_zone) / self.var.cellArea
 
                             # for groundwater substract demand which is fulfilled by surface zone, calc abstraction and what
                             # is left. zone_gw_demand = npareatotal(left_gw_demand, self.var.allocation_zone)
+                            #TODO also this would need to be changed if gw abstraction should have different zone than surface water abstraction that would be a bit more complicated
                             zone_gw_demand = zoneDemand - zone_sf_abstraction
                             zone_gw_abstraction = np.minimum(zone_gw_demand, zone_gw_avail)
                             # zone_unmetdemand = np.maximum(0., zone_gw_demand - zone_gw_abstraction)
