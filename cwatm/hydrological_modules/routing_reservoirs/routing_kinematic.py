@@ -284,6 +284,9 @@ class routing_kinematic(object):
         channelStorageIni = self.var.totalCrossSectionArea * self.var.chanLength * 0.1
         self.var.channelStorage = self.var.load_initial("channelStorage", default = channelStorageIni)
 
+        # if self.var.maskLowlands:
+        #     self.var.channelStorage = np.where(self.var.LowlandMask == 1, np.zeros_like(self.var.channelStorage), self.var.channelStorage)
+
         # Initialise discharge at kinematic wave pixels (note that InvBeta is
         # simply 1/beta, computational efficiency!)
         #self.var.chanQKin = np.where(self.var.channelAlpha > 0, (self.var.totalCrossSectionArea / self.var.channelAlpha) ** self.var.invbeta, 0.)

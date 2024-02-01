@@ -166,6 +166,8 @@ class runoff_concentration(object):
                 self.var.runoff_conc[i] = self.var.load_initial("runoff_conc", number = i+1)
 
             self.var.gridcell_storage = np.sum(self.var.runoff_conc[:],0)
+            if self.var.maskLowlands:
+                self.var.gridcell_storage = np.where(self.var.LowlandMask == 1, np.zeros_like(self.var.gridcell_storage), self.var.gridcell_storage)
 
         else:
             self.var.gridcell_storage = 0
@@ -280,6 +282,13 @@ class runoff_concentration(object):
             self.var.gridcell_storage = self.var.gridcell_storage - self.var.runoff_conc[0] + self.var.runoff
             sumnewrunoff = self.var.runoff.copy()
             self.var.runoff = self.var.runoff_conc[0].copy()
+
+            # if you want to mask lowlandsset the runoff to zero, such that no water from lowlands reaches the streams
+            if self.var.maskLowlands:
+                self.var.runoff = np.where(self.var.LowlandMask == 1, np.zeros_like(self.var.runoff), self.var.runoff)
+                self.var.gridcell_storage = np.where(self.var.LowlandMask == 1, np.zeros_like(self.var.gridcell_storage), self.var.gridcell_storage)
+
+
 
             if checkOption('calcWaterBalance'):
                 self.model.waterbalance_module.waterBalanceCheck(

@@ -2393,8 +2393,11 @@ class water_demand:
 
             # limit return flow to not put all fossil groundwater back into the system, because it can lead to higher
             # river discharge than without water demand, as water is taken from fossil groundwater (out of system)
-            unmet_div_ww = 1. - np.minimum(1, divideValues(self.var.unmetDemand,
-                                                           self.var.act_totalWaterWithdrawal + self.var.unmetDemand))
+            #TODO change this for nolowland runs!!!
+            unmet_div_ww = 1. - np.minimum(1, np.where(self.var.unmetDemand / self.var.act_totalWaterWithdrawal > 0.95, divideValues(self.var.unmetDemand,
+                                                           self.var.act_totalWaterWithdrawal) , divideValues(self.var.unmetDemand,
+                                                           self.var.act_totalWaterWithdrawal + self.var.unmetDemand / 2)))
+
 
             # 'fossil_water_treated_normally' means that there is no lost fossil water
             if 'fossil_water_treated_normally' in option:

@@ -125,6 +125,8 @@ class lakes_res_small(object):
             self.var.smalllakeLevel = divideValues(self.var.smalllakeVolumeM3, self.var.smalllakeArea)
 
             self.var.smalllakeStorage = self.var.smalllakeVolumeM3.copy()
+            if self.var.maskLowlands:
+                self.var.smalllakeStorage = np.where(self.var.LowlandMask == 1, np.zeros_like(self.var.smalllakeStorage), self.var.smalllakeStorage)
 
 
             testStorage = "minStorage" in binding
@@ -205,6 +207,8 @@ class lakes_res_small(object):
             # Lake storage
 
             self.var.smalllakeStorage =  self.var.smalllakeStorage + lakeIn * self.var.DtSec  - QsmallLakeOut - self.var.smallevapWaterBody
+            if self.var.maskLowlands:
+                self.var.smalllakeStorage = np.where(self.var.LowlandMask == 1, np.zeros_like(self.var.smalllakeStorage), self.var.smalllakeStorage)
             # for mass balance, the lake storage is calculated every time step
 
             ### if dateVar['curr'] >= dateVar['intSpin']:
@@ -282,6 +286,8 @@ class lakes_res_small(object):
             inflow = self.var.smallpart * self.var.runoff * self.var.cellArea  # inflow in m3
             self.var.smallLakeout = dynamic_smalllakes(inflow) / self.var.cellArea     # back to [m]
             self.var.runoff = self.var.smallLakeout + (1-self.var.smallpart) * self.var.runoff    # back to [m]  # with and without in m3
+            if self.var.maskLowlands:
+                self.var.runoff = np.where(self.var.LowlandMask == 1, np.zeros_like(self.var.runoff), self.var.runoff)
 
             # ------------------------------------------------------------
             #report(decompress(runoff_LR), "C:\work\output3/run.map")
