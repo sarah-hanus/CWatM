@@ -2255,7 +2255,8 @@ class water_demand:
                             # for groundwater substract demand which is fulfilled by surface zone, calc abstraction and what
                             # is left. zone_gw_demand = npareatotal(left_gw_demand, self.var.allocation_zone)
                             #TODO also this would need to be changed if gw abstraction should have different zone than surface water abstraction that would be a bit more complicated
-                            zone_gw_demand = zoneDemand - zone_sf_abstraction
+                            zone_gw_demand = npareatotal(left_gw_demand * self.var.cellArea,
+                                                         self.var.allocation_zone) / self.var.cellArea
                             zone_gw_abstraction = np.minimum(zone_gw_demand, zone_gw_avail)
                             # zone_unmetdemand = np.maximum(0., zone_gw_demand - zone_gw_abstraction)
 
