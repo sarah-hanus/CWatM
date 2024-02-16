@@ -48,6 +48,13 @@ class waterdemand_environmental_need:
             self.var.use_environflow = returnBool('use_environflow')
         else:
             self.var.use_environflow = False
+        if "environflowTimeMonthly" in binding:
+            if returnBool('environflowTimeMonthly'):
+                self.var.environflowTime = 'monthly'
+            else: self.var.environflowTime = 'month'
+        else:
+            self.var.environflowTime = 'month'
+
         if self.var.use_environflow:
             self.var.cut_ef_map = returnBool('cut_ef_map')
         else:
@@ -62,7 +69,7 @@ class waterdemand_environmental_need:
         if self.var.use_environflow:
             if globals.dateVar['newStart'] or globals.dateVar['newMonth']:
                 # envflow in [m3/s] -> [m]
-                self.var.envFlowm3s = readnetcdf2('EnvironmentalFlowFile', globals.dateVar['currDate'], "month", cut=self.var.cut_ef_map) # in [m3/s]
+                self.var.envFlowm3s = readnetcdf2('EnvironmentalFlowFile', globals.dateVar['currDate'], self.var.environflowTime, cut=self.var.cut_ef_map) # in [m3/s]
                 self.var.envFlow = self.var.M3toM  * self.var.channelAlpha * self.var.chanLength * self.var.envFlowm3s ** 0.6 # in [m]
 
         else:
