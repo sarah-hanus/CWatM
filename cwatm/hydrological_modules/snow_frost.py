@@ -159,8 +159,15 @@ class snow_frost(object):
         # initialize as many snow covers as snow layers -> read them as SnowCover1 , SnowCover2 ...
         # SnowCover1 is the highest zone
         self.var.SnowCoverS = []
+
         for i in range(self.var.numberSnowLayers):
-            self.var.SnowCoverS.append(self.var.load_initial("SnowCover",number = i+1))
+            if 'useSnowStorageinitfile' in option:
+                if not checkOption('useSnowStorageinitfile'):
+                    self.var.SnowCoverS.append(globals.inZero.copy())
+                else:
+                    self.var.SnowCoverS.append(self.var.load_initial("SnowCover", number=i + 1))
+            else:
+                self.var.SnowCoverS.append(self.var.load_initial("SnowCover",number = i+1))
 
         # initial snow depth in elevation zones A, B, and C, respectively  [mm]
         self.var.SnowCover = np.sum(self.var.SnowCoverS,axis=0) / self.var.numberSnowLayersFloat + globals.inZero

@@ -144,10 +144,11 @@ class initcondition(object):
         # list all initiatial variables
         # Snow & Frost
         number = int(loadmap('NumberSnowLayers'))
-        if checkOption('includeSnowStorageinitfile'):
-            for i in range(number):
-                initCondVar.append("SnowCover"+str(i+1))
-                initCondVarValue.append("SnowCoverS["+str(i)+"]")
+        if 'includeSnowStorageinitfile' in option:
+            if checkOption('includeSnowStorageinitfile'):
+                for i in range(number):
+                    initCondVar.append("SnowCover"+str(i+1))
+                    initCondVarValue.append("SnowCoverS["+str(i)+"]")
         initCondVar.append("FrostIndex")
         initCondVarValue.append("FrostIndex")
 
