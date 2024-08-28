@@ -234,6 +234,8 @@ class snow_frost(object):
 
         self.var.Snow = globals.inZero.copy()
         self.var.Rain = globals.inZero.copy()
+        self.var.Snowtotal = globals.inZero.copy()
+        self.var.Raintotal = globals.inZero.copy()
         self.var.SnowMelt = globals.inZero.copy()
         self.var.IceMelt = globals.inZero.copy()
         self.var.SnowCover = globals.inZero.copy()
@@ -338,6 +340,9 @@ class snow_frost(object):
                 self.var.SnowMelt += SnowMeltS * weight
                 self.var.IceMelt += IceMeltS * weight
                 self.var.SnowCover += self.var.SnowCoverS[i] * weight
+                # also have snow and rain output without considering OGGM (to have total input)
+                self.var.Snowtotal += SnowS * 1 / self.var.numberSnowLayers
+                self.var.Raintotal += RainS * 1 / self.var.numberSnowLayers
 
             else:
                 self.var.Snow += SnowS
